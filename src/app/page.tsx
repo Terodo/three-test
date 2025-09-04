@@ -1,5 +1,11 @@
+import ThreeScene from "./ui/ThreeScene";
+
 export default function Home() {
-  return (
-    <h1 className="text-5xl">Hello World</h1>
-  );
+
+    return (
+    <>
+        <h1 className="text-5xl content-center">Three.JS Test</h1>
+        <ThreeScene />
+    </>
+    );
 }
