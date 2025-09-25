@@ -1,4 +1,4 @@
-import ThreeScene from "./ui/ThreeScene";
+import ThreeScene from "@/app/three/components/ThreeScene";
 
 export default function Home() {
 
