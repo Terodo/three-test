@@ -1,12 +1,13 @@
 'use client';
 import React, { useRef, useCallback } from 'react';
+import { AnimationMixer, Clock } from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 import { createScene, createCamera, createRenderer } from '@/app/three/core/scene';
 import { addOrbitControls } from '@/app/three/core/controls';
 import { addDefaultLight } from '@/app/three/core/lights';
 import { addResizeHandler } from '@/app/three/core/resize';
 import { startAnimationLoop } from '@/app/three/core/animation';
-import { createCube } from '@/app/three/objects/cube';
-import { loadModels } from '@/app/three/loaders/gltf';
 
 export default function ThreeScene() {
   const cleanupRef = useRef<() => void | null>(null);
@@ -20,17 +21,24 @@ export default function ThreeScene() {
     const controls = addOrbitControls(camera, renderer);
     addDefaultLight(scene);
 
-    const cube = createCube();
-    scene.add(cube);
+    const loader = new GLTFLoader();
+    let mixer: AnimationMixer;
+    const clock = new Clock();
 
-    // Mehrere Modelle definieren und laden
-    loadModels(scene, [
-      { url: '/models/Test.glb', position: [4, 0, -2], scale: 0.3 },
-    ]);
+    // refactor loadModels function so I can pass in a custom function that is called in the onLoad callback
+    loader.load('/models/machine.glb', (gltf) => {
+      gltf.scene.position.set(0, 0, 0);
+      gltf.scene.scale.set(1, 1, 1);
+      mixer = new AnimationMixer(gltf.scene);
+      mixer.clipAction(gltf.animations[0]).play();
+
+      scene.add(gltf.scene);
+    })
 
     const stopAnim = startAnimationLoop(() => {
-      cube.rotation.y += 0.01;
       controls.update();
+      const delta = clock.getDelta();
+      mixer?.update(delta);
     }, scene, camera, renderer);
 
     const removeResize = addResizeHandler(container, camera, renderer);
